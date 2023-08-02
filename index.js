@@ -15,11 +15,16 @@ client.on("ready", async() => {
     require("./src/utils/Loader")(client)
 })
 client.login();
-client.on('messageCreated', message => {
+client.on('messageCreated',async message => {
 	if (!message.content.startsWith(prefix) || message.author.type === 0) return;
 	const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
     let cmd;
+    const c = await db.findOne({ id: message.author.id });
+    if (!c) {
+        const newDocument = new db({ id: message.author.id, coin: 4.75 });
+        await newDocument.save();
+    }  
 	if (client.commands.has(command)) {
         cmd = client.commands.get(command).execute(client, message, args);
     } else if(client.aliases.has(command)) {
@@ -33,13 +38,14 @@ client.on('messageCreated', message => {
 });
 
 client.on("memberJoined", async(user) => {
+        if(user.serverId == "dlOywd9j") {
   const c = await db.findOne({ id: user.userId });
   if (!c) {
       const newDocument = new db({ id: user.userId, coin: 0.0 });
       await newDocument.save();
   }
-  await db.findOneAndUpdate({id: userid }, {$inc: {coin: 4.5 }}, { upsert: true })
-  await history.findOneAndUpdate({id: userid}, {$push: {gecmis: { count: 4.5, user: client.user.id, reason: "Joined Support Server", time: Date.now() } }}, { upsert: true});          
+  await db.findOneAndUpdate({id: user.userId }, {$inc: {coin: 4.5 }}, { upsert: true })
+  await history.findOneAndUpdate({id: user.userId}, {$push: {gecmis: { count: 4.5, user: client.user.id, reason: "Joined Support Server", time: Date.now() } }}, { upsert: true});     }     
 })
 
 /*client.on("memberJoined", async (user) => {
