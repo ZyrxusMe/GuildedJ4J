@@ -7,6 +7,10 @@ let db = require("./src/db/model/user");
 let history = require("./src/db/model/history");
 
 client.on("ready", async() => {
+      setInterval(() => {
+    update()
+  }, 10000);
+  update()
     console.log(chalk.green.bgGreen.bold("Bot is successfully logged in"))
     require("./src/utils/Loader")(client)
 })
@@ -27,6 +31,16 @@ client.on('messageCreated', message => {
 		message.reply('there was an error trying to execute that command!');
 	}
 });
+
+client.on("memberJoined", async(user) => {
+  const c = await db.findOne({ id: user.userId });
+  if (!c) {
+      const newDocument = new db({ id: user.userId, coin: 0.0 });
+      await newDocument.save();
+  }
+  await db.findOneAndUpdate({id: userid }, {$inc: {coin: 4.5 }}, { upsert: true })
+  await history.findOneAndUpdate({id: userid}, {$push: {gecmis: { count: 4.5, user: client.user.id, reason: "Joined Support Server", time: Date.now() } }}, { upsert: true});          
+})
 
 /*client.on("memberJoined", async (user) => {
     const servers = await server.findOne({ id: user.serverId });
@@ -66,6 +80,12 @@ client.on('messageCreated', message => {
   });*/
 
   client.on("memberRemoved", async(user) => {
+
+    if(user.serverId == "dlOywd9j") {
+      await db.findOneAndUpdate({id: user.userId }, {$inc: {coin: -4.5 }}, { upsert: true })
+      return await history.findOneAndUpdate({id: user.userId }, {$push: {gecmis: { count: -4.5, user: client.user.id, reason: `Leaving Support Server.`, time: new Date() } }}, { upsert: true});          
+    }
+
     const member = await client.members.fetch(user.serverId, user.userId);
 
     let servecr = await server.findOne({id: user.serverId})
@@ -93,3 +113,28 @@ process.on("uncaughtException", (error) => {
     console.error("Promise:", promise);
     console.error("Reason:", reason);
   });
+
+async function update() {
+  const url = `https://www.guilded.gg/api/v1/users/${client.user.id}/status`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Accept': 'application/json',
+    'Content-type': 'application/json',
+  };
+  const data = {
+    emoteId: '1662336',
+    content:  `${await fetchUserGuilds(client.user.id)} guilds!`
+  };
+  const requestOptions = {
+    method: 'PUT',
+    headers: headers,
+    body: JSON.stringify(data)
+  };  
+  fetch(url, requestOptions)
+}
+
+async function fetchUserGuilds(x) {
+    const a = await fetch("https://www.guilded.gg/api/users/"+x+"/teams")
+    const json = await a.json()
+    return json.teams.length
+}
