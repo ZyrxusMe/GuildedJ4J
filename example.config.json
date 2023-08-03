@@ -1,0 +1,5 @@
+{
+    "token": "gapi_===========================================",
+    "prefix": "+",
+    "mongo": "mongodb://localhost/mydb"
+}
