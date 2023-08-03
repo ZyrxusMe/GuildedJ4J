@@ -3,12 +3,15 @@ let db = require("../db/model/user");
 let history = require("../db/model/history");
 let server = require("../db/model/server");
 const fetch = require("node-fetch");
+const config = require("../../config.json")
 
 module.exports = {
     name: 'buy',
     description: 'Buy user. 1 member = 1 coin. You can specify an advertising message.',
     aliases: ["ad", "adversite"],
     async execute(client, message, args) {
+        let perm = await permission(message.serverId, message.author.id, "CanUpdateServer")
+        if(!perm) return message.reply("You do not have the necessary permissions to use this command. (Required Permission: `CanUpdateServer`)") 
         let team = await getTeam(message.serverId)
         const embed = new Guilded.Embed()
         .setAuthor(team.name, team?.profilePicture)
@@ -32,7 +35,7 @@ module.exports = {
             embed.setDescription("Please do not provide another link. We will already provide the invite url of your server for you to explain.")
             return message.reply(embed)
         }
-        if(c?.coin < coin || c?.coin < 5) {
+        if(c?.coin < coin || coin < 5) {
             embed.setDescription("Your funds are not sufficient to accomplish this. Please remember that you can request a minimum of 5 members.")
             return message.reply(embed)
         }
@@ -58,3 +61,31 @@ async function getTeam(x) {
     const json = await a.json()
     return json.team
 }
+async function permission(server, user, perm) {
+    const membersResponse = await fetch(`https://www.guilded.gg/api/teams/${server}/members`);
+    const members = await membersResponse.json()
+    const member = members.members.find(x => x.id == user);
+  
+    if (!member) {
+      return false;
+    }
+  
+    for (const roleId of member.roleIds) {
+      const roleResponse = await fetch(`https://www.guilded.gg/api/v1/servers/${server}/roles/${roleId}`, {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${config.token}`,
+          'Accept': 'application/json',
+          'Content-type': 'application/json'
+        }
+      });
+  
+      const role = await roleResponse.json();
+      if (role.role.permissions.includes(perm)) {
+        return true;
+      }
+    }
+  
+    return false;
+  }
+  
