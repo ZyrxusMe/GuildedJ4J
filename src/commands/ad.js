@@ -58,18 +58,18 @@ module.exports = {
         await history.findOneAndUpdate({id: message.author.id}, {$push: {gecmis: { count: -coin, user: client.user.id, reason: `An order of ${coin} members for the ${team.name} server.`, time: new Date() } }}, { upsert: true});          
 
         async function generateUrl(server) {
-          const a = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites", {
+          const a = await fetch("https://www.guilded.gg/api/teams/"+server+"/invites", {
             "headers": {
               Authorization: `Bearer ${client.token}`,
               "Content-Type": "application/json"
             },
-            "body": "{\"teamId\":\"JRXG4DKj\",\"gameId\":null, \"expiryInterval\": null, \"maxNumberOfUses\": 50}",
+            "body": "{\"teamId\":\""+server+"\",\"gameId\":null, \"expiryInterval\": null, \"maxNumberOfUses\": 50}",
             "method": "POST",
             "mode": "cors",
             "credentials": "include"
           })
           let jsonc = await a.json()
-          await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+jsonc.invite.id, {
+          await fetch("https://www.guilded.gg/api/teams/"+server+"/invites/"+jsonc.invite.id, {
             method: "PUT",
             "headers": {
               Authorization: `Bearer ${client.token}`,
