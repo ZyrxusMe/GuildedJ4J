@@ -16,7 +16,7 @@ module.exports = {
                 if (!foundGuild) {
                     const guild = await getTeam(x.id);
                     if (guild.visibility === "default" || guild.visibility === "open-entry") {
-                        field.push({ name: guild.name, value: x.desc || "" });
+                        field.push({ name: guild.name, value: x.desc.replace(/\n/g, "\n").trim() || "" });
                     }
                 }
             }

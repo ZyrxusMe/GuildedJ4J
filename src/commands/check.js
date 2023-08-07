@@ -15,7 +15,6 @@ module.exports = {
         const joinDate = member.joinedAt;
         const newDate = new Date(joinDate);
         if(!servecr) return message.reply("We're sorry, but we couldn't provide you with any coins on this server.")
-        if(servecr.time > joinDate) return message.reply("We're sorry, but we couldn't provide you with any coins on this server.")
         newDate.setDate(newDate.getDate() + 3);
         const options = {year: 'numeric',month: 'long',day: 'numeric',hour: '2-digit',minute: '2-digit',second: '2-digit',timeZoneName: 'short'};
         const a = joinDate.toLocaleString('en-US', options);

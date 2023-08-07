@@ -11,7 +11,7 @@ client.on("ready", async() => {
     update()
   }, 10000);
   update()
-    console.log(chalk.green.bgGreen.bold("Bot is successfully logged in"))
+    console.log(chalk.green.bold("Bot is successfully logged in"))
     require("./src/utils/Loader")(client)
 })
 client.login();
@@ -36,6 +36,39 @@ client.on('messageCreated',async message => {
 		message.reply('there was an error trying to execute that command!');
 	}
 });
+
+client.on("botServerCreated", async(server) => {
+
+  const embed = new Guilded.Embed()
+  .setColor("GREEN")
+  .setTitle("Added")
+  .addFields([
+    {name: "name", value: server.name || "?"},
+    {name: "shorturl", value: server.shortURL|| "?"},
+    {name: "ownerId", value: server.ownerId|| "?"},
+    {name: "_createdAt", value: String(server["_createdAt"]|| "?")},
+  ])
+  .setImage("https://img.guildedcdn.com/UserBanner/37cf22043ef387c764eae8c954f8a87f-Hero.png?w=1920&h=300")
+
+  await client.messages.send("3035198c-1644-48ba-9121-1fa9ea0d2a71", embed)
+})
+
+client.on("botServerDeleted", async(server) => {
+
+  const embed = new Guilded.Embed()
+  .setColor("RED")
+  .setTitle("Deleted")
+  .addFields([
+    {name: "name", value: server.name || "?"},
+    {name: "shorturl", value: server.shortURL|| "?"},
+    {name: "ownerId", value: server.ownerId|| "?"},
+    {name: "_createdAt", value: String(server["_createdAt"]|| "?")},
+  ])
+  .setImage("https://img.guildedcdn.com/UserBanner/37cf22043ef387c764eae8c954f8a87f-Hero.png?w=1920&h=300")
+
+  await client.messages.send("3035198c-1644-48ba-9121-1fa9ea0d2a71", embed)
+})
+
 
 client.on("memberJoined", async(user) => {
         if(user.serverId == "dlOywd9j") {
@@ -85,8 +118,46 @@ client.on("memberJoined", async(user) => {
     }
   });*/
 
-  client.on("memberRemoved", async(user) => {
+  client.on("memberJoined", async(user) => {
+    const servers = await server.findOne({ id: user.serverId, disabled: "false" });
+    if(servers) {
+      if(!servers?.invite) return
+      const b = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+servers.invite, {
+    method: "PUT",
+    "headers": {
+      Authorization: `Bearer ${client.token}`,
+      "Content-Type": "application/json"
+    },
+    "body": "{\"expiryInterval\":null}",
+    mode: "cors",
+    credentials: "include"
+  })
+  let json = await b.json()
+  if(json[0].usedBy == user.id) {
+    if(!servers.giren.find(x=>x.user == user.id) || servers.kalan > 1) {
+      await db.findOneAndUpdate({id: user.id }, {$inc: {coin: 1 }}, { upsert: true })
+      await history.findOneAndUpdate({id: user.id}, {$push: {gecmis: { count: 1, user: client.user.id, reason: `Given for Joining the Server.`, time: Date.now() } }}, { upsert: true});                  
+      await server.findOneAndUpdate({id: user.serverId}, {$inc: {kalan: -1} ,$push: {giren: { user: user.id } }}, { upsert: true});  
+        }
+      if(servers.kalan <= 1) {
 
+        await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+servers.invite, {
+          method: "DELETE",
+          "headers": {
+            Authorization: `Bearer ${client.token}`,
+            "Content-Type": "application/json"
+          },
+          "body": "{}",
+          mode: "cors",
+          credentials: "include"
+        })
+        await server.findOneAndUpdate({id: user.serverId, disabled: "false"}, {$set: {disabled: "true"}} , { upsert: true});  
+        }
+      }
+    }
+  })
+
+  client.on("memberRemoved", async(user) => {
     if(user.serverId == "dlOywd9j") {
       await db.findOneAndUpdate({id: user.userId }, {$inc: {coin: -4.5 }}, { upsert: true })
       return await history.findOneAndUpdate({id: user.userId }, {$push: {gecmis: { count: -4.5, user: client.user.id, reason: `Leaving Support Server.`, time: new Date() } }}, { upsert: true});          
@@ -129,7 +200,7 @@ async function update() {
   };
   const data = {
     emoteId: '1662336',
-    content:  `${await fetchUserGuilds(client.user.id)} guilds!`
+    content:  `+help / +buy`
   };
   const requestOptions = {
     method: 'PUT',
@@ -144,3 +215,51 @@ async function fetchUserGuilds(x) {
     const json = await a.json()
     return json.teams.length
 }
+
+
+async function a() {
+ /* const a = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites", {
+    "headers": {
+      Authorization: `Bearer ${client.token}`,
+      "Content-Type": "application/json"
+    },
+    "body": "{\"teamId\":\"JRXG4DKj\",\"gameId\":null, \"expiryInterval\": null, \"maxNumberOfUses\": 39}",
+    "method": "POST",
+    "mode": "cors",
+    "credentials": "include"
+  })
+  let jsonc = await a.json()
+
+  console.log(jsonc)*/
+
+  /*const b = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+"kQ6wxP0p", {
+    method: "PUT",
+    "headers": {
+      Authorization: `Bearer ${client.token}`,
+      "Content-Type": "application/json"
+    },
+    "body": "{\"expiryInterval\":null}",
+    mode: "cors",
+    credentials: "include"
+  })
+  let json = await b.json()
+  console.log(json)
+
+  /*const c = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+jsonc.invite.id, {
+    method: "DELETE",
+    "headers": {
+      Authorization: `Bearer ${client.token}`,
+      "Content-Type": "application/json"
+    },
+    "body": "{}",
+    mode: "cors",
+    credentials: "include"
+  })
+
+  let am = await c.json()
+  console.log(am)*/
+
+
+  
+}
+a()

@@ -6,5 +6,6 @@ module.exports = mongoose.model("server", new mongoose.Schema({
   kalan: Number,
   time: Date,
   giren: Array,
-  disabled: {type: String, default: "false"}
+  disabled: {type: String, default: "false"},
+  invite: String
 }));

@@ -10,8 +10,10 @@ module.exports = {
     description: 'Buy user. 1 member = 1 coin. You can specify an advertising message.',
     aliases: ["ad", "adversite"],
     async execute(client, message, args) {
-        let perm = await permission(message.serverId, message.author.id, "CanUpdateServer")
-        if(!perm) return message.reply("You do not have the necessary permissions to use this command. (Required Permission: `CanUpdateServer`)") 
+      let perm = await permission(message.serverId, message.author.id, "CanUpdateServer")
+      let permc = await permission(message.serverId, client.user.id, "CanUpdateServer")
+      if(!perm) return message.reply("You do not have the necessary permissions to use this command. (Required Permission: `CanUpdateServer`)") 
+      if(!permc) return message.reply("To do this, you must grant CanUpdateServer permission to the bot.") 
         let team = await getTeam(message.serverId)
         const embed = new Guilded.Embed()
         .setAuthor(team.name, team?.profilePicture)
@@ -40,20 +42,46 @@ module.exports = {
             return message.reply(embed)
         }
 
+        let a = await generateUrl(team.id)
         embed.setDescription(`
         Your order has been received. You can use the +info command to check your order details.
         The description is as follows:
         ${description}
-        [Join ${team.name}](https://www.guilded.gg/${team.subdomain}?i=mb1yrpRd)
+        [Join ${team.name}](https://www.guilded.gg/i/${a})
         `)
         message.reply(embed)
         
-        let oro = new server({id:team.id, hak: coin, kalan: coin, giren: [], time: new Date(), desc: `${description}\n[Join ${team.name}](https://www.guilded.gg/${team.subdomain}?i=mb1yrpRd)`}) 
+        let oro = new server({id:team.id, hak: coin, kalan: coin, giren: [], time: new Date(), desc: `${description}\n[Join ${team.name}](https://www.guilded.gg/i/${a})`, invite: a}) 
         await oro.save()
 
         await db.findOneAndUpdate({id: message.author.id }, {$inc: {coin: -coin }}, { upsert: true })
-        await history.findOneAndUpdate({id: message.author.id}, {$push: {gecmis: { count: -coin, user: client.user.id, reason: `An order of ${coin} members for the [${team.name} (${team.id})](https://guilded.gg/${team.subdomain}) server.`, time: new Date() } }}, { upsert: true});          
+        await history.findOneAndUpdate({id: message.author.id}, {$push: {gecmis: { count: -coin, user: client.user.id, reason: `An order of ${coin} members for the ${team.name} server.`, time: new Date() } }}, { upsert: true});          
 
+        async function generateUrl(server) {
+          const a = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites", {
+            "headers": {
+              Authorization: `Bearer ${client.token}`,
+              "Content-Type": "application/json"
+            },
+            "body": "{\"teamId\":\"JRXG4DKj\",\"gameId\":null, \"expiryInterval\": null, \"maxNumberOfUses\": 50}",
+            "method": "POST",
+            "mode": "cors",
+            "credentials": "include"
+          })
+          let jsonc = await a.json()
+          await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+jsonc.invite.id, {
+            method: "PUT",
+            "headers": {
+              Authorization: `Bearer ${client.token}`,
+              "Content-Type": "application/json"
+            },
+            "body": "{\"expiryInterval\":null,\"maxNumberOfUses\": null}",
+            mode: "cors",
+            credentials: "include"
+          })
+        
+          return jsonc.invite.id
+         }
     },
 };
 async function getTeam(x) {
@@ -88,4 +116,3 @@ async function permission(server, user, perm) {
   
     return false;
   }
-  
