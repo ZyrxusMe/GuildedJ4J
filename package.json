@@ -1,6 +1,6 @@
 {
   "name": "guildedj4j",
-  "version": "0.0.2-beta",
+  "version": "0.0.4-beta",
   "description": "Guilded Join4Join (j4j) bot - The best bot to get a lot of members quickly and easily",
   "main": "index.js",
   "scripts": {
