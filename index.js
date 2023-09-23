@@ -81,44 +81,7 @@ client.on("memberJoined", async(user) => {
   await history.findOneAndUpdate({id: user.userId}, {$push: {gecmis: { count: 4.5, user: client.user.id, reason: "Joined Support Server", time: Date.now() } }}, { upsert: true});     }     
 })
 
-/*client.on("memberJoined", async (user) => {
-    const servers = await server.findOne({ id: user.serverId });
-    if (servers) {
-      const formatDate = (date) => {
-        return new Date(date).toLocaleString('en-GB', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          timeZoneName: 'short'
-        });
-      };
-  
-      const joined = formatDate(user.joinedAt);
-  
-      const tar = new Date(user.joinedAt);
-      tar.setDate(tar.getDate() + 3);
-      const cikabilcke = formatDate(tar);
-  
-      await server.findOneAndUpdate(
-        { id: user.serverId },
-        {
-          $push: {
-            giren: {
-              id: user.id,
-              time: joined,
-              cikabilecek: cikabilcke
-            }
-          }
-        },
-        { upsert: true }
-      );
-    }
-  });*/
-
-  client.on("memberJoined", async(user) => {
+,  client.on("memberJoined", async(user) => {
     const servers = await server.findOne({ id: user.serverId, disabled: "false" });
     if(servers) {
       if(!servers?.invite) return
@@ -216,50 +179,3 @@ async function fetchUserGuilds(x) {
     return json.teams.length
 }
 
-
-async function a() {
- /* const a = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites", {
-    "headers": {
-      Authorization: `Bearer ${client.token}`,
-      "Content-Type": "application/json"
-    },
-    "body": "{\"teamId\":\"JRXG4DKj\",\"gameId\":null, \"expiryInterval\": null, \"maxNumberOfUses\": 39}",
-    "method": "POST",
-    "mode": "cors",
-    "credentials": "include"
-  })
-  let jsonc = await a.json()
-
-  console.log(jsonc)*/
-
-  /*const b = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+"kQ6wxP0p", {
-    method: "PUT",
-    "headers": {
-      Authorization: `Bearer ${client.token}`,
-      "Content-Type": "application/json"
-    },
-    "body": "{\"expiryInterval\":null}",
-    mode: "cors",
-    credentials: "include"
-  })
-  let json = await b.json()
-  console.log(json)
-
-  /*const c = await fetch("https://www.guilded.gg/api/teams/JRXG4DKj/invites/"+jsonc.invite.id, {
-    method: "DELETE",
-    "headers": {
-      Authorization: `Bearer ${client.token}`,
-      "Content-Type": "application/json"
-    },
-    "body": "{}",
-    mode: "cors",
-    credentials: "include"
-  })
-
-  let am = await c.json()
-  console.log(am)*/
-
-
-  
-}
-a()
