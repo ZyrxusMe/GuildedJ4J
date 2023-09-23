@@ -81,7 +81,7 @@ client.on("memberJoined", async(user) => {
   await history.findOneAndUpdate({id: user.userId}, {$push: {gecmis: { count: 4.5, user: client.user.id, reason: "Joined Support Server", time: Date.now() } }}, { upsert: true});     }     
 })
 
-,  client.on("memberJoined", async(user) => {
+client.on("memberJoined", async(user) => {
     const servers = await server.findOne({ id: user.serverId, disabled: "false" });
     if(servers) {
       if(!servers?.invite) return
